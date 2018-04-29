@@ -3,5 +3,9 @@
 
 int main()
 {
+	//create GM
+	GameManager *myGM= &GameManager::getGameManager();
+	GameManager::destroyGameManager();
+	//getchar();
 	return EXIT_SUCCESS;
 }

@@ -2,12 +2,10 @@
 
 GameManager::GameManager()
 {
-
 }
 
 GameManager::~GameManager()
 {
-
 }
 
 
@@ -18,6 +16,7 @@ GameManager& GameManager::getGameManager()
 	if (gameManager == nullptr)
 	{
 		gameManager = new GameManager();
+		std::cout << "GameManager started. \n";
 	}
 
 	return *gameManager;
@@ -28,5 +27,9 @@ void GameManager::destroyGameManager()
 {
 	GameManager *gameManager = &getGameManager();
 
-	if (gameManager != nullptr) delete gameManager;
+	if (gameManager != nullptr)
+	{
+		delete gameManager;
+		std::cout << "GameManager terminated. \n";
+	}
 }
