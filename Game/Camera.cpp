@@ -1,18 +1,26 @@
 #include "Camera.h"
 
-const double Camera::TO_RADS = 3.141592654/180.0;
+const float Camera::TO_RADS = 3.1415926f/180.0f;
+const float Camera::TO_DEGS = 180.0f/3.1415926f;
 
-Camera::Camera(GLFWwindow* window, float theWindowWidth, float theWindowHeight)
+Camera::Camera(glm::vec3 initPos, glm::vec3 initRot, GLint theWindowWidth, GLint theWindowHeight)
 {
-    initCamera();
+    //initCamera();
+    position = initPos;
+    rotation = initRot;
+    speed = glm::vec3(0.0f);
 
-    windowWidth = theWindowWidth;
-    windowHeight = theWindowHeight;
+    movementSpeedFactor = 100.0f;
 
-    windowMidX = windowWidth / 2.0f;
-    windowMidY = windowHeight / 2.0f;
+    pitchSensitivity = 0.15f;
+    yawSensitivity = 0.15f;
 
-    glfwSetCursorPos(window, windowMidX, windowMidY);
+    holdForward = false;
+    holdBackward = false;
+    holdLeft = false;
+    holdRight = false;
+
+    updateWindowMidpoint(theWindowWidth, theWindowHeight);
 }
 
 Camera::~Camera()
@@ -20,51 +28,75 @@ Camera::~Camera()
 
 }
 
-void Camera::initCamera()
+void Camera::handleKeyPress(GLint key, GLint action)
 {
-    position = glm::vec3(0, 0, 0);
-    rotation = glm::vec3(0, 0, 0);
-    speed = glm::vec3(0, 0, 0);
 
-    movementSpeedFactor = 100.0;
-
-    pitchSensitivity = 0.02;
-    yawSensitivity = 0.02;
-
-    holdForward = false;
-    holdBackward = false;
-    holdLeft = false;
-    holdRight = false;
+    if(action==GLFW_PRESS || action==GLFW_REPEAT)
+    {
+        switch(key)
+        {
+        case GLFW_KEY_W:
+            holdForward = true;
+            break;
+        case GLFW_KEY_S:
+            holdBackward = true;
+            break;
+        case GLFW_KEY_A:
+            holdLeft = true;
+            break;
+        case GLFW_KEY_D:
+            holdRight = true;
+            break;
+        default:
+            break;
+        }
+    }
+    else
+    {
+        switch(key)
+        {
+        case GLFW_KEY_W:
+            holdForward = false;
+            break;
+        case GLFW_KEY_S:
+            holdBackward = false;
+            break;
+        case GLFW_KEY_A:
+            holdLeft = false;
+            break;
+        case GLFW_KEY_D:
+            holdRight = false;
+            break;
+        default:
+            break;
+        }
+    }
 }
 
-const double Camera::toRads(const double &theAngleInDegrees) const
+void Camera::handleMouseMove(GLFWwindow* window, GLint mouseX, GLint mouseY)
 {
-    return theAngleInDegrees * TO_RADS;
-}
+    double horizontalMov = (mouseX - windowMidX)*yawSensitivity;
+    double verticalMov = (mouseY - windowMidY)*pitchSensitivity;
 
-void Camera::handleMouseMove(GLFWwindow* window, double mouseX, double mouseY)
-{
-    double horizontalMov = (mouseX - windowMidX+1)*yawSensitivity;
-    double verticalMov = (mouseY - windowMidY+1)*pitchSensitivity;
+    rotation.x += verticalMov;
+    rotation.y += horizontalMov;
 
-    rotation += glm::vec3(verticalMov, horizontalMov, 0);
-
-    if( rotation.x < -90)
+    if( rotation.x < -90.0f)
     {
-        rotation.x = -90;
+        rotation.x = -90.0f;
     }
-    if( rotation.x > 90)
+    if( rotation.x > 90.0f)
     {
-        rotation.x = 90;
+        rotation.x = 90.0f;
     }
 
-    if( rotation.y < 0)
+    if( rotation.y < 0.0f)
     {
-        rotation.y = 360;
+        rotation.y += 360.0f;
     }
-    if( rotation.y > 360)
+    if( rotation.y > 360.0f)
     {
-        rotation.y = -360;
+        rotation.y -= 360.0f;
     }
 
     glfwSetCursorPos(window, windowMidX, windowMidY);
@@ -72,30 +104,34 @@ void Camera::handleMouseMove(GLFWwindow* window, double mouseX, double mouseY)
 
 void Camera::move(double deltaTime)
 {
-    glm::vec3 movement;
+    glm::vec3 movement(0.0f, 0.0f, 0.0f);
 
-    double sinX = sin( toRads(rotation.x));
-    double cosX = cos( toRads(rotation.x));
-    double sinY = sin( toRads(rotation.y));
-    double cosY = cos( toRads(rotation.y));
+    float sinX = sin( toRads(rotation.x));
+    float cosX = cos( toRads(rotation.x));
+    float sinY = sin( toRads(rotation.y));
+    float cosY = cos( toRads(rotation.y));
 
-    double pitchLimitFactor = cosX;
+    float pitchLimitFactor = cosX;
 
     if(holdForward)
         movement = movement + glm::vec3(sinY*pitchLimitFactor, -sinX, -cosY*pitchLimitFactor);
     if(holdBackward)
         movement = movement + glm::vec3(-sinY*pitchLimitFactor, sinX, cosY*pitchLimitFactor);
     if(holdLeft)
-        movement = movement + glm::vec3(-cosY, 0, -sinY);
+        movement = movement - glm::vec3(cosY, 0.0f, sinY);
     if(holdRight)
-        movement = movement + glm::vec3(cosY, 0, sinY);
+        movement = movement + glm::vec3(cosY, 0.0f, sinY);
 
-    movement = normalize(movement);
+    glm::vec3 movNorm(0.0f, 0.0f, 0.0f);
+    if(glm::length(movement)!= 0.0f)
+    {
+        movNorm = glm::normalize(movement);
+    }
 
     float framerateFactor = movementSpeedFactor * deltaTime;
 
-    movement = movement*framerateFactor;
+    movNorm = movNorm*framerateFactor;
 
-    position = position + movement;
+    position = position + movNorm;
 }
 

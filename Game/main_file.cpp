@@ -35,17 +35,15 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 
 using namespace glm;
 
-float speed_x = 0; // [radiany/s]
-float speed_y = 0; // [radiany/s]
-
-
-
-//Pointer to Camera obj
-Camera* cam;
-
-int windowWidth = 720;
-int windowHeight = 480;
+GLsizei windowWidth = 720;
+GLsizei windowHeight = 480;
+float vertFieldOfViewDegs = 45.0f;
+float nearClipDistance    = 1.0f;
+float farClipDistance     = 2000.0f;
 float aspect=(float)windowWidth/(float)windowHeight; //Stosunek szerokości do wysokości okna
+
+Camera cam(glm::vec3(0.0f), glm::vec3(0.0f), windowWidth, windowHeight);
+
 
 //Uchwyty na shadery
 ShaderProgram *shaderProgram; //Wskaźnik na obiekt reprezentujący program cieniujący.
@@ -82,44 +80,30 @@ void error_callback(int error, const char* description) {
 
 //Procedura obsługi klawiatury
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (action == GLFW_PRESS) {
-		/*if (key == GLFW_KEY_LEFT) speed_y = -3.14;
-		if (key == GLFW_KEY_RIGHT) speed_y = 3.14;
-		if (key == GLFW_KEY_UP) speed_x = -3.14;
-		if (key == GLFW_KEY_DOWN) speed_x = 3.14;*/
-        if(key==GLFW_KEY_W) cam->holdForward=true;
-        if(key==GLFW_KEY_S) cam->holdBackward=true;
-        if(key==GLFW_KEY_A) cam->holdLeft=true;
-        if(key==GLFW_KEY_D) cam->holdRight=true;
+	if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
+        glfwSetWindowShouldClose(window, GL_TRUE);
 	}
-
-
-	if (action == GLFW_RELEASE) {
-		/*if (key == GLFW_KEY_LEFT) speed_y = 0;
-		if (key == GLFW_KEY_RIGHT) speed_y = 0;
-		if (key == GLFW_KEY_UP) speed_x = 0;
-		if (key == GLFW_KEY_DOWN) speed_x = 0;*/
-        if(key==GLFW_KEY_W) cam->holdForward=false;
-        if(key==GLFW_KEY_S) cam->holdBackward=false;
-        if(key==GLFW_KEY_A) cam->holdLeft=false;
-        if(key==GLFW_KEY_D) cam->holdRight=false;
-	}
+    else
+    {
+        cam.handleKeyPress(key, action);
+    }
 }
 
 void handleMouse(GLFWwindow* window, double mouseX, double mouseY)
 {
-    std::cout<<mouseX<<"\t"<<mouseY<<std::endl;
-    cam->handleMouseMove(window, mouseX, mouseY);
+    //std::cout<<mouseX<<"\t"<<mouseY<<std::endl;
+    cam.handleMouseMove(window, mouseX, mouseY);
 }
 
 //Procedura obługi zmiany rozmiaru bufora ramki
-void windowResize(GLFWwindow* window, int width, int height) {
+void windowResize(GLFWwindow* window, GLsizei width, GLsizei height) {
     glViewport(0, 0, width, height); //Obraz ma być generowany w oknie o tej rozdzielczości
     if (height!=0) {
         aspect=(float)width/(float)height; //Stosunek szerokości do wysokości okna
     } else {
         aspect=1;
     }
+    cam.updateWindowMidpoint(width, height);
 }
 
 //Tworzy bufor VBO z tablicy
@@ -195,6 +179,10 @@ void initOpenGLProgram(GLFWwindow* window) {
     glfwSetCursorPosCallback(window, handleMouse);
     glfwSetFramebufferSizeCallback(window,windowResize); //Zarejestruj procedurę obsługi zmiany rozmiaru bufora ramki
 
+    glfwSwapInterval(1);
+    glfwSetInputMode(window, GLFW_CURSOR_DISABLED, GL_FALSE);
+    glfwSetCursorPos(window, windowWidth / 2, windowHeight / 2);
+
 	shaderProgram=new ShaderProgram("vshader.vert",NULL,"fshader.frag"); //Wczytaj program cieniujący
 
 	tex0=readTexture("metal.png");
@@ -255,32 +243,28 @@ void drawObject(GLuint vao, ShaderProgram *shaderProgram, mat4 mP, mat4 mV, mat4
 
 //Procedura rysująca zawartość sceny
 void drawScene(GLFWwindow* window) {
+    cam.move(1.0f/60.0f);
 	//************Tutaj umieszczaj kod rysujący obraz******************l
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); //Wykonaj czyszczenie bufora kolorów
 
-	glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f); //Wylicz macierz rzutowania
+	//glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f); //Wylicz macierz rzutowania
 
-	/*glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
-		glm::vec3(0.0f, 0.0f, -5.0f),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f));*/
+    glm::mat4 P = glm::perspective(vertFieldOfViewDegs, aspect, nearClipDistance, farClipDistance); //Wylicz macierz rzutowania
 
-    glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
-		glm::vec3(0.0f, 0.0f, -5.0f),
-		glm::vec3(-cam->getXRot(), -cam->getYRot(),0),
+	glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
+		glm::vec3(1.0f, 0.0f, -5.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f));
-		//std::cout<<cam->getXRot()<<"\t"<< cam->getYRot()<<"\t"<<cam->getZRot()<<std::endl;
 
-    /*V = glm::rotate(V, cam->getXRot(), glm::vec3(1, 0, 0));
-	V = glm::rotate(V, cam->getYRot(), glm::vec3(0, 1, 0));*/
+    V = glm::rotate(V, cam.getXRotRad(), glm::vec3(1.0f, 0.0f, 0.0f));
+    V = glm::rotate(V, cam.getYRotRad(), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    V = glm::translate(V, -cam.getPosition());
 
 
 	//Wylicz macierz modelu rysowanego obiektu
 	glm::mat4 M = glm::mat4(1.0f);
-	//M = glm::rotate(M, cam->getXRot(), glm::vec3(1, 0, 0));
-	//M = glm::rotate(M, cam->getYRot(), glm::vec3(0, 1, 0));
-
 
     //M = glm::translate(M, glm::vec3(-cam->getXPos(), -cam->getYPos(), -cam->getZPos()));
 	//Narysuj obiekt
@@ -315,7 +299,7 @@ int main(void)
 
 
 	glfwMakeContextCurrent(window); //Od tego momentu kontekst okna staje się aktywny i polecenia OpenGL będą dotyczyć właśnie jego.
-	glfwSwapInterval(1); //Czekaj na 1 powrót plamki przed pokazaniem ukrytego bufora
+	//glfwSwapInterval(1); //Czekaj na 1 powrót plamki przed pokazaniem ukrytego bufora
 
 	if (glewInit() != GLEW_OK) { //Zainicjuj bibliotekę GLEW
 		fprintf(stderr, "Nie można zainicjować GLEW.\n");
@@ -324,18 +308,13 @@ int main(void)
 
 	initOpenGLProgram(window); //Operacje inicjujące
 
-    cam = new Camera(window, windowWidth, windowHeight );
-    glfwSetCursorPos(window, windowWidth/2, windowHeight/2);
 	/*float angle_x = 0; //Kąt obrotu obiektu
 	float angle_y = 0; //Kąt obrotu obiektu
 */
-	glfwSetTime(0); //Wyzeruj licznik czasu
-    double deltaTime = 1;
-	//Główna pętla
+    //Główna pętla
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
 		 //Zwiększ kąt o prędkość kątową razy czas jaki upłynął od poprzedniej klatki
-		cam->move(deltaTime);
 		glfwSetTime(0); //Wyzeruj licznik czasu
 		drawScene(window); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
