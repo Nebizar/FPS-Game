@@ -31,13 +31,21 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include "lodepng.h"
 #include "shaderprogram.h"
 #include "GameManager.h"
+#include "Camera.h"
 
 using namespace glm;
 
 float speed_x = 0; // [radiany/s]
 float speed_y = 0; // [radiany/s]
 
-float aspect=1; //Stosunek szerokości do wysokości okna
+
+
+//Pointer to Camera obj
+Camera* cam;
+
+int windowWidth = 720;
+int windowHeight = 480;
+float aspect=(float)windowWidth/(float)windowHeight; //Stosunek szerokości do wysokości okna
 
 //Uchwyty na shadery
 ShaderProgram *shaderProgram; //Wskaźnik na obiekt reprezentujący program cieniujący.
@@ -73,22 +81,35 @@ void error_callback(int error, const char* description) {
 }
 
 //Procedura obsługi klawiatury
-void key_callback(GLFWwindow* window, int key,
-	int scancode, int action, int mods) {
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_LEFT) speed_y = -3.14;
+		/*if (key == GLFW_KEY_LEFT) speed_y = -3.14;
 		if (key == GLFW_KEY_RIGHT) speed_y = 3.14;
 		if (key == GLFW_KEY_UP) speed_x = -3.14;
-		if (key == GLFW_KEY_DOWN) speed_x = 3.14;
+		if (key == GLFW_KEY_DOWN) speed_x = 3.14;*/
+        if(key==GLFW_KEY_W) cam->holdForward=true;
+        if(key==GLFW_KEY_S) cam->holdBackward=true;
+        if(key==GLFW_KEY_A) cam->holdLeft=true;
+        if(key==GLFW_KEY_D) cam->holdRight=true;
 	}
 
 
 	if (action == GLFW_RELEASE) {
-		if (key == GLFW_KEY_LEFT) speed_y = 0;
+		/*if (key == GLFW_KEY_LEFT) speed_y = 0;
 		if (key == GLFW_KEY_RIGHT) speed_y = 0;
 		if (key == GLFW_KEY_UP) speed_x = 0;
-		if (key == GLFW_KEY_DOWN) speed_x = 0;
+		if (key == GLFW_KEY_DOWN) speed_x = 0;*/
+        if(key==GLFW_KEY_W) cam->holdForward=false;
+        if(key==GLFW_KEY_S) cam->holdBackward=false;
+        if(key==GLFW_KEY_A) cam->holdLeft=false;
+        if(key==GLFW_KEY_D) cam->holdRight=false;
 	}
+}
+
+void handleMouse(GLFWwindow* window, double mouseX, double mouseY)
+{
+    std::cout<<mouseX<<"\t"<<mouseY<<std::endl;
+    cam->handleMouseMove(window, mouseX, mouseY);
 }
 
 //Procedura obługi zmiany rozmiaru bufora ramki
@@ -171,6 +192,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glClearColor(0, 0, 0, 1); //Czyść ekran na czarno
 	glEnable(GL_DEPTH_TEST); //Włącz używanie Z-Bufora
 	glfwSetKeyCallback(window, key_callback); //Zarejestruj procedurę obsługi klawiatury
+    glfwSetCursorPosCallback(window, handleMouse);
     glfwSetFramebufferSizeCallback(window,windowResize); //Zarejestruj procedurę obsługi zmiany rozmiaru bufora ramki
 
 	shaderProgram=new ShaderProgram("vshader.vert",NULL,"fshader.frag"); //Wczytaj program cieniujący
@@ -232,24 +254,35 @@ void drawObject(GLuint vao, ShaderProgram *shaderProgram, mat4 mP, mat4 mV, mat4
 }
 
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
+void drawScene(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod rysujący obraz******************l
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); //Wykonaj czyszczenie bufora kolorów
 
 	glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f); //Wylicz macierz rzutowania
 
-	glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
+	/*glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
 		glm::vec3(0.0f, 0.0f, -5.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f));*/
+
+    glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
+		glm::vec3(0.0f, 0.0f, -5.0f),
+		glm::vec3(-cam->getXRot(), -cam->getYRot(),0),
 		glm::vec3(0.0f, 1.0f, 0.0f));
+		//std::cout<<cam->getXRot()<<"\t"<< cam->getYRot()<<"\t"<<cam->getZRot()<<std::endl;
+
+    /*V = glm::rotate(V, cam->getXRot(), glm::vec3(1, 0, 0));
+	V = glm::rotate(V, cam->getYRot(), glm::vec3(0, 1, 0));*/
 
 
 	//Wylicz macierz modelu rysowanego obiektu
 	glm::mat4 M = glm::mat4(1.0f);
-	M = glm::rotate(M, angle_x, glm::vec3(1, 0, 0));
-	M = glm::rotate(M, angle_y, glm::vec3(0, 1, 0));
+	//M = glm::rotate(M, cam->getXRot(), glm::vec3(1, 0, 0));
+	//M = glm::rotate(M, cam->getYRot(), glm::vec3(0, 1, 0));
 
+
+    //M = glm::translate(M, glm::vec3(-cam->getXPos(), -cam->getYPos(), -cam->getZPos()));
 	//Narysuj obiekt
 	drawObject(vao,shaderProgram,P,V,M);
 
@@ -271,7 +304,7 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	window = glfwCreateWindow(500, 500, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+	window = glfwCreateWindow(windowWidth, windowHeight, "Doom[v0.1]", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
 
 	if (!window) //Jeżeli okna nie udało się utworzyć, to zamknij program
 	{
@@ -279,6 +312,7 @@ int main(void)
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
+
 
 	glfwMakeContextCurrent(window); //Od tego momentu kontekst okna staje się aktywny i polecenia OpenGL będą dotyczyć właśnie jego.
 	glfwSwapInterval(1); //Czekaj na 1 powrót plamki przed pokazaniem ukrytego bufora
@@ -290,18 +324,20 @@ int main(void)
 
 	initOpenGLProgram(window); //Operacje inicjujące
 
-	float angle_x = 0; //Kąt obrotu obiektu
+    cam = new Camera(window, windowWidth, windowHeight );
+    glfwSetCursorPos(window, windowWidth/2, windowHeight/2);
+	/*float angle_x = 0; //Kąt obrotu obiektu
 	float angle_y = 0; //Kąt obrotu obiektu
-
+*/
 	glfwSetTime(0); //Wyzeruj licznik czasu
-
+    double deltaTime = 1;
 	//Główna pętla
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
-		angle_x += speed_x*glfwGetTime(); //Zwiększ kąt o prędkość kątową razy czas jaki upłynął od poprzedniej klatki
-		angle_y += speed_y*glfwGetTime(); //Zwiększ kąt o prędkość kątową razy czas jaki upłynął od poprzedniej klatki
+		 //Zwiększ kąt o prędkość kątową razy czas jaki upłynął od poprzedniej klatki
+		cam->move(deltaTime);
 		glfwSetTime(0); //Wyzeruj licznik czasu
-		drawScene(window,angle_x,angle_y); //Wykonaj procedurę rysującą
+		drawScene(window); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 

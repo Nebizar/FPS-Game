@@ -48,6 +48,8 @@
 			<Add directory="glfw/lib" />
 			<Add directory="glew/lib" />
 		</Linker>
+		<Unit filename="Camera.cpp" />
+		<Unit filename="Camera.h" />
 		<Unit filename="GameManager.cpp" />
 		<Unit filename="GameManager.h" />
 		<Unit filename="allmodels.h" />
