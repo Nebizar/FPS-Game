@@ -180,7 +180,7 @@ void initOpenGLProgram(GLFWwindow* window) {
     glfwSetFramebufferSizeCallback(window,windowResize); //Zarejestruj procedurę obsługi zmiany rozmiaru bufora ramki
 
     glfwSwapInterval(1);
-    glfwSetInputMode(window, GLFW_CURSOR_DISABLED, GL_FALSE);
+    glfwSetInputMode(window, GLFW_CURSOR_DISABLED, GL_TRUE);
     glfwSetCursorPos(window, windowWidth / 2, windowHeight / 2);
 
 	shaderProgram=new ShaderProgram("vshader.vert",NULL,"fshader.frag"); //Wczytaj program cieniujący
@@ -253,10 +253,10 @@ void drawScene(GLFWwindow* window) {
     glm::mat4 P = glm::perspective(vertFieldOfViewDegs, aspect, nearClipDistance, farClipDistance); //Wylicz macierz rzutowania
 
 	glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
-		glm::vec3(1.0f, 0.0f, -5.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 0.0f, -1.0f),
+		glm::vec3(1.0f, 0.0f, 1.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f));
-
+    //glm::mat4 V = glm::mat4(1.0f);
     V = glm::rotate(V, cam.getXRotRad(), glm::vec3(1.0f, 0.0f, 0.0f));
     V = glm::rotate(V, cam.getYRotRad(), glm::vec3(0.0f, 1.0f, 0.0f));
 

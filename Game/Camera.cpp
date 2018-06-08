@@ -10,10 +10,10 @@ Camera::Camera(glm::vec3 initPos, glm::vec3 initRot, GLint theWindowWidth, GLint
     rotation = initRot;
     speed = glm::vec3(0.0f);
 
-    movementSpeedFactor = 100.0f;
+    movementSpeedFactor = 5.0f;
 
-    pitchSensitivity = 0.15f;
-    yawSensitivity = 0.15f;
+    pitchSensitivity = 0.05f;
+    yawSensitivity = 0.05f;
 
     holdForward = false;
     holdBackward = false;
@@ -114,13 +114,13 @@ void Camera::move(double deltaTime)
     float pitchLimitFactor = cosX;
 
     if(holdForward)
-        movement = movement + glm::vec3(sinY*pitchLimitFactor, -sinX, -cosY*pitchLimitFactor);
+        movement = movement + glm::vec3(-sinY*pitchLimitFactor, 0, cosY*pitchLimitFactor);
     if(holdBackward)
-        movement = movement + glm::vec3(-sinY*pitchLimitFactor, sinX, cosY*pitchLimitFactor);
+        movement = movement + glm::vec3(sinY*pitchLimitFactor, 0, -cosY*pitchLimitFactor);
     if(holdLeft)
-        movement = movement - glm::vec3(cosY, 0.0f, sinY);
-    if(holdRight)
         movement = movement + glm::vec3(cosY, 0.0f, sinY);
+    if(holdRight)
+        movement = movement - glm::vec3(cosY, 0.0f, sinY);
 
     glm::vec3 movNorm(0.0f, 0.0f, 0.0f);
     if(glm::length(movement)!= 0.0f)

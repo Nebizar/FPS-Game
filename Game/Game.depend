@@ -524,7 +524,7 @@
 	<iostream>
 	<GLFW/glfw3.h>
 
-1527715279 source:c:\users\krzysztof\documents\github\fps-game\game\main_file.cpp
+1527770318 source:c:\users\krzysztof\documents\github\fps-game\game\main_file.cpp
 	<GL/glew.h>
 	<GLFW/glfw3.h>
 	<glm/glm.hpp>
@@ -620,7 +620,7 @@
 	"cube.h"
 	"teapot.h"
 
-1527713184 source:c:\users\krzysztof\documents\github\fps-game\game\camera.cpp
+1527952689 source:c:\users\krzysztof\documents\github\fps-game\game\camera.cpp
 	"Camera.h"
 
 1527709816 c:\users\krzysztof\documents\github\fps-game\game\camera.h
@@ -628,4 +628,9 @@
 	<math.h>
 	<GLFW/glfw3.h>
 	<glm/glm.hpp>
+
+1527769247 source:c:\users\krzysztof\documents\github\fps-game\game\location.cpp
+	"Location.h"
+
+1527769247 c:\users\krzysztof\documents\github\fps-game\game\location.h
 
