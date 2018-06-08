@@ -9,6 +9,7 @@ Camera::Camera(glm::vec3 initPos, glm::vec3 initRot, GLint theWindowWidth, GLint
     position = initPos;
     rotation = initRot;
     speed = glm::vec3(0.0f);
+    rotation2 = glm::vec3(0.0f);
 
     movementSpeedFactor = 5.0f;
 
@@ -75,8 +76,8 @@ void Camera::handleKeyPress(GLint key, GLint action)
 
 void Camera::handleMouseMove(GLFWwindow* window, GLint mouseX, GLint mouseY)
 {
-    double horizontalMov = (mouseX - windowMidX)*yawSensitivity;
-    double verticalMov = (mouseY - windowMidY)*pitchSensitivity;
+    double horizontalMov = ( windowMidX - mouseX)*yawSensitivity;
+    double verticalMov = (windowMidY - mouseY)*pitchSensitivity;
 
     rotation.x += verticalMov;
     rotation.y += horizontalMov;
@@ -98,7 +99,9 @@ void Camera::handleMouseMove(GLFWwindow* window, GLint mouseX, GLint mouseY)
     {
         rotation.y -= 360.0f;
     }
-
+    rotation2.x = cos(verticalMov) * sin(horizontalMov);
+    rotation2.y = sin(verticalMov);
+    rotation2.z = cos(verticalMov) * cos(horizontalMov);
     glfwSetCursorPos(window, windowMidX, windowMidY);
 }
 

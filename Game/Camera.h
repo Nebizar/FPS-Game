@@ -13,6 +13,7 @@ class Camera
         glm::vec3 position;
         glm::vec3 rotation;
         glm::vec3 speed;
+        glm::vec3 rotation2;
 
         double movementSpeedFactor;
         double pitchSensitivity;
@@ -70,7 +71,7 @@ class Camera
         float getZPos() const{return position.z;}
 
         //rotation getters and setters
-        glm::vec3 getRotation() const{ return rotation;}
+        glm::vec3 getRotation() const{ return rotation2;}
         void setRotation(glm::vec3 v) {rotation = v; }
         float getXRot() const{return rotation.x;}
         float getYRot() const{return rotation.y;}

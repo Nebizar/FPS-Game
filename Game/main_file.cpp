@@ -42,7 +42,7 @@ float nearClipDistance    = 1.0f;
 float farClipDistance     = 2000.0f;
 float aspect=(float)windowWidth/(float)windowHeight; //Stosunek szerokości do wysokości okna
 
-Camera cam(glm::vec3(0.0f), glm::vec3(0.0f), windowWidth, windowHeight);
+Camera cam(glm::vec3(1.0f, 0.0f, -5.0f), glm::vec3(-1.0f, 0.0f, 5.0f), windowWidth, windowHeight);
 
 
 //Uchwyty na shadery
@@ -252,15 +252,19 @@ void drawScene(GLFWwindow* window) {
 
     glm::mat4 P = glm::perspective(vertFieldOfViewDegs, aspect, nearClipDistance, farClipDistance); //Wylicz macierz rzutowania
 
-	glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
-		glm::vec3(1.0f, 0.0f, -1.0f),
-		glm::vec3(1.0f, 0.0f, 1.0f),
+    glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
+		cam.getPosition(),
+		cam.getRotation(),
+		glm::vec3(0.0f, 1.0f, 0.0f));
+	/*glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
+		glm::vec3(1.0f, 0.0f, -5.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f));
     //glm::mat4 V = glm::mat4(1.0f);
     V = glm::rotate(V, cam.getXRotRad(), glm::vec3(1.0f, 0.0f, 0.0f));
     V = glm::rotate(V, cam.getYRotRad(), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    V = glm::translate(V, -cam.getPosition());
+    V = glm::translate(V, -cam.getPosition());*/
 
 
 	//Wylicz macierz modelu rysowanego obiektu
