@@ -79,8 +79,8 @@ void Camera::handleMouseMove(GLFWwindow* window, GLint mouseX, GLint mouseY)
     double horizontalMov = ( windowMidX - mouseX)*yawSensitivity;
     double verticalMov = (windowMidY - mouseY)*pitchSensitivity;
 
-    rotation.x += verticalMov;
-    rotation.y += horizontalMov;
+    rotation.x -= verticalMov;
+    rotation.y -= horizontalMov;
 
     if( rotation.x < -90.0f)
     {
@@ -99,9 +99,6 @@ void Camera::handleMouseMove(GLFWwindow* window, GLint mouseX, GLint mouseY)
     {
         rotation.y -= 360.0f;
     }
-    rotation2.x = cos(verticalMov) * sin(horizontalMov);
-    rotation2.y = sin(verticalMov);
-    rotation2.z = cos(verticalMov) * cos(horizontalMov);
     glfwSetCursorPos(window, windowMidX, windowMidY);
 }
 

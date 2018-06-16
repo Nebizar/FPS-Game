@@ -71,7 +71,7 @@ class Camera
         float getZPos() const{return position.z;}
 
         //rotation getters and setters
-        glm::vec3 getRotation() const{ return rotation2;}
+        glm::vec3 getRotation() const{ return rotation;}
         void setRotation(glm::vec3 v) {rotation = v; }
         float getXRot() const{return rotation.x;}
         float getYRot() const{return rotation.y;}
@@ -80,6 +80,7 @@ class Camera
         float getXRotRad() const{return rotation.x * TO_RADS;}
         float getYRotRad() const{return rotation.y * TO_RADS;}
         float getZRotRad() const{return rotation.z * TO_RADS;}
+
 
 };
 

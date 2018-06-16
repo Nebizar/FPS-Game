@@ -32,6 +32,7 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include "shaderprogram.h"
 #include "GameManager.h"
 #include "Camera.h"
+//#include <assimp/Importer.hpp>
 
 using namespace glm;
 
@@ -41,8 +42,12 @@ float vertFieldOfViewDegs = 45.0f;
 float nearClipDistance    = 1.0f;
 float farClipDistance     = 2000.0f;
 float aspect=(float)windowWidth/(float)windowHeight; //Stosunek szerokości do wysokości okna
+float x=1.0f;
+float y=0.0f;
+float z=0.0f;
+glm::vec3 eye=glm::vec3(2.0f,5.0f,5.0f);
 
-Camera cam(glm::vec3(1.0f, 0.0f, -5.0f), glm::vec3(-1.0f, 0.0f, 5.0f), windowWidth, windowHeight);
+Camera cam(glm::vec3(1.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), windowWidth, windowHeight);
 
 
 //Uchwyty na shadery
@@ -180,7 +185,7 @@ void initOpenGLProgram(GLFWwindow* window) {
     glfwSetFramebufferSizeCallback(window,windowResize); //Zarejestruj procedurę obsługi zmiany rozmiaru bufora ramki
 
     glfwSwapInterval(1);
-    glfwSetInputMode(window, GLFW_CURSOR_DISABLED, GL_TRUE);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     glfwSetCursorPos(window, windowWidth / 2, windowHeight / 2);
 
 	shaderProgram=new ShaderProgram("vshader.vert",NULL,"fshader.frag"); //Wczytaj program cieniujący
@@ -252,19 +257,49 @@ void drawScene(GLFWwindow* window) {
 
     glm::mat4 P = glm::perspective(vertFieldOfViewDegs, aspect, nearClipDistance, farClipDistance); //Wylicz macierz rzutowania
 
-    glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
+    /*glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
 		cam.getPosition(),
 		cam.getRotation(),
-		glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::vec3(0.0f, 1.0f, 0.0f));*/
+		float yaw=cam.getYRotRad();
+		float pitch=cam.getXRotRad();
+    /*float cosYaw=cos(cam.getYRotRad());
+    float sinYaw=sin(cam.getYRotRad());
+    float cosPitch=cos(cam.getXRotRad());
+    float sinPitch=sin(cam.getXRotRad());
+    vec3 xaxis = { cosYaw, 0, -sinYaw };
+    vec3 yaxis = { sinYaw * sinPitch, cosPitch, cosYaw * sinPitch };
+    vec3 zaxis = { sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw };
 	/*glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
-		glm::vec3(1.0f, 0.0f, -5.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::vec3(1.0f, 3.0f, -1.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f));*/
     //glm::mat4 V = glm::mat4(1.0f);
-    V = glm::rotate(V, cam.getXRotRad(), glm::vec3(1.0f, 0.0f, 0.0f));
-    V = glm::rotate(V, cam.getYRotRad(), glm::vec3(0.0f, 1.0f, 0.0f));
+     //roll can be removed from here. because is not actually used in FPS camera
+ glm::mat4 matPitch = glm::mat4(1.0f);//identity matrix
+ glm::mat4 matYaw   = glm::mat4(1.0f);//identity matrix
 
-    V = glm::translate(V, -cam.getPosition());*/
+ //roll, pitch and yaw are used to store our angles in our class
+ matPitch = glm::rotate(matPitch, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+ matYaw   = glm::rotate(matYaw,  yaw,    glm::vec3(0.0f, 1.0f, 0.0f));
+
+ //order matters
+ glm::mat4 rotate = matPitch * matYaw;
+
+ glm::mat4 translate = glm::mat4(1.0f);
+ translate = glm::translate(translate, -eye);
+
+glm::mat4 V = rotate * translate;
+    std::cout<<V[1][0]<<std::endl;
+    std::cout<<V[1][1]<<std::endl;
+    std::cout<<V[1][2]<<std::endl;
+    /*V = glm::rotate(V, cam.getXRotRad(), glm::vec3(1.0f, 0.0f, 0.0f));
+    V = glm::rotate(V, cam.getYRotRad(), glm::vec3(0.0f, 1.0f, 0.0f));*/
+
+    V = glm::translate(V, cam.getPosition());
+    std::cout<<V[0][0]<<std::endl;
+    std::cout<<V[1][0]<<std::endl;
+    std::cout<<V[2][0]<<std::endl;
 
 
 	//Wylicz macierz modelu rysowanego obiektu
