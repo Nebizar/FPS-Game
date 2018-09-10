@@ -52,6 +52,8 @@
 		<Unit filename="Camera.h" />
 		<Unit filename="GameManager.cpp" />
 		<Unit filename="GameManager.h" />
+		<Unit filename="ObjectLoader.cpp" />
+		<Unit filename="ObjectLoader.h" />
 		<Unit filename="allmodels.h" />
 		<Unit filename="constants.h" />
 		<Unit filename="cube.cpp" />
