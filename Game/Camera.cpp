@@ -11,7 +11,7 @@ Camera::Camera(glm::vec3 initPos, glm::vec3 initRot, GLint theWindowWidth, GLint
     speed = glm::vec3(0.0f);
     rotation2 = glm::vec3(0.0f);
 
-    movementSpeedFactor = 5.0f;
+    movementSpeedFactor = 100.0f;
 
     pitchSensitivity = 0.05f;
     yawSensitivity = 0.05f;

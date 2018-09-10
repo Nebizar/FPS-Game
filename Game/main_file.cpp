@@ -145,10 +145,10 @@ void assignVBOtoAttribute(ShaderProgram *shaderProgram,const char* attributeName
 //Przygotowanie do rysowania pojedynczego obiektu
 void prepareObject(ShaderProgram *shaderProgram) {
 	//Zbuduj VBO z danymi obiektu do narysowania
-	bufVertices=makeBuffer(&vertices, vertexCount, sizeof(float)*4); //VBO ze współrzędnymi wierzchołków
+	bufVertices=makeBuffer(vertices, vertexCount, sizeof(float)*4); //VBO ze współrzędnymi wierzchołków
 	//bufColors=makeBuffer(colors, vertexCount, sizeof(float)*4);//VBO z kolorami wierzchołków
-	bufNormals=makeBuffer(&normals, vertexCount, sizeof(float)*4);//VBO z wektorami normalnymi wierzchołków
-	bufTexCoords=makeBuffer(&texCoords, vertexCount, sizeof(float)*2);//VBO ze współrzędnymi teksturowania
+	bufNormals=makeBuffer(normals, vertexCount, sizeof(float)*4);//VBO z wektorami normalnymi wierzchołków
+	bufTexCoords=makeBuffer(texCoords, vertexCount, sizeof(float)*2);//VBO ze współrzędnymi teksturowania
 
 	//Zbuduj VAO wiążący atrybuty z konkretnymi VBO
 	glGenVertexArrays(1,&vao); //Wygeneruj uchwyt na VAO i zapisz go do zmiennej globalnej
@@ -193,35 +193,35 @@ void initOpenGLProgram(GLFWwindow* window) {
     bool check = objL.loadObj("objects/base.obj", verticesV, texCoordsV, normalsV);
     vertexCount = verticesV.size();
     vertices = new float[verticesV.size()*4];
-normals = new float[normalsV.size()*4];
-texCoords = new float[texCoordsV.size()*2];
-std::cout<<verticesV[0][0];
-int a =0;
-for(int i=0;i<verticesV.size();i++)
-{
-    for(int j=0;j<4;j++)
+    normals = new float[normalsV.size()*4];
+    texCoords = new float[texCoordsV.size()*2];
+    //std::cout<<verticesV[0][0];
+    int a =0;
+    for(int i=0;i<verticesV.size();i++)
     {
-        vertices[a]=verticesV[i][j];
-        a++;
+        for(int j=0;j<4;j++)
+        {
+            vertices[a]=verticesV[i][j];
+            a++;
+        }
     }
-}
-std::cout<<vertices[0];
-a = 0;
-for(int i=0;i<normalsV.size();i++)
-{
-    for(int j=0;j<4;j++)
+    //std::cout<<vertices[0];
+    a = 0;
+    for(int i=0;i<normalsV.size();i++)
     {
-        normals[a]=normalsV[i][j];
-        a++;
+        for(int j=0;j<4;j++)
+        {
+            normals[a]=normalsV[i][j];
+            a++;
+        }
     }
-}
 
-for(int i=0;i<texCoordsV.size();i=i+2)
-{
-    texCoords[i]=texCoordsV[i][0];
-    texCoords[i+1]=texCoordsV[i][1];
-}
-std::cout<<"CHECK";
+    for(int i=0;i<texCoordsV.size();i=i+2)
+    {
+        texCoords[i]=texCoordsV[i][0];
+        texCoords[i+1]=texCoordsV[i][1];
+    }
+    std::cout<<"Location loaded.";
 
 
 
