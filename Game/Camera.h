@@ -49,7 +49,7 @@ class Camera
 
         void handleMouseMove(GLFWwindow* window, GLint mouseX, GLint mouseY);
 
-        void move(double deltaTime);
+        void move(double deltaTime, float up);
 
         void updateWindowMidpoint(GLsizei windowWidth, GLsizei windowHeight)
         {

@@ -16,6 +16,12 @@ class ObjectLoader
                      std::vector<glm::vec4> & out_vertices,
                      std::vector<glm::vec2> & out_uvs,
                      std::vector<glm::vec4> & out_normals);
+        void convert(std::vector<glm::vec4> & verticesV,
+                     std::vector<glm::vec2> & texCoordsV,
+                     std::vector<glm::vec4> & normalsV,
+                     float* vertices,
+                     float* texCoords,
+                     float* normals);
     protected:
 
     private:

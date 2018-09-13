@@ -524,7 +524,7 @@
 	<iostream>
 	<GLFW/glfw3.h>
 
-1536602934 source:c:\users\krzysztof\documents\github\fps-game\game\main_file.cpp
+1536763636 source:c:\users\krzysztof\documents\github\fps-game\game\main_file.cpp
 	<GL/glew.h>
 	<GLFW/glfw3.h>
 	<glm/glm.hpp>
@@ -622,10 +622,10 @@
 	"cube.h"
 	"teapot.h"
 
-1536603087 source:c:\users\krzysztof\documents\github\fps-game\game\camera.cpp
+1536765469 source:c:\users\krzysztof\documents\github\fps-game\game\camera.cpp
 	"Camera.h"
 
-1528499823 c:\users\krzysztof\documents\github\fps-game\game\camera.h
+1536762606 c:\users\krzysztof\documents\github\fps-game\game\camera.h
 	<iostream>
 	<math.h>
 	<GLFW/glfw3.h>
@@ -1897,10 +1897,10 @@
 1528462322 source:c:\users\krzysztof\downloads\gameopengl-master\game\teapot.cpp
 	"teapot.h"
 
-1529435381 source:c:\users\krzysztof\documents\github\fps-game\game\objectloader.cpp
+1536751365 source:c:\users\krzysztof\documents\github\fps-game\game\objectloader.cpp
 	"ObjectLoader.h"
 
-1529423592 c:\users\krzysztof\documents\github\fps-game\game\objectloader.h
+1536749615 c:\users\krzysztof\documents\github\fps-game\game\objectloader.h
 	<vector>
 	<glm/glm.hpp>
 	<stdlib.h>

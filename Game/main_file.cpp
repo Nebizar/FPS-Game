@@ -47,7 +47,7 @@ float aspect=(float)windowWidth/(float)windowHeight; //Stosunek szerokości do w
 float x=1.0f;
 float y=0.0f;
 float z=0.0f;
-glm::vec3 eye=glm::vec3(2.0f,5.0f,5.0f);
+glm::vec3 eye=glm::vec3(2.0f,50.0f,5.0f);
 
 Camera cam(glm::vec3(1.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), windowWidth, windowHeight);
 
@@ -57,31 +57,32 @@ ShaderProgram *shaderProgram; //Wskaźnik na obiekt reprezentujący program cien
 
 //Uchwyty na VAO i bufory wierzchołków
 GLuint vao;
+GLuint vao2;
 GLuint bufVertices; //Uchwyt na bufor VBO przechowujący tablicę współrzędnych wierzchołków
 GLuint bufColors;  //Uchwyt na bufor VBO przechowujący tablicę kolorów
 GLuint bufNormals; //Uchwyt na bufor VBO przechowujący tablicę wektorów normalnych
 GLuint bufTexCoords; //Uchwyt na bufor VBO przechowujący tablicę współrzędnych teksturowania
+GLuint bufVertices2; //Uchwyt na bufor VBO przechowujący tablicę współrzędnych wierzchołków
+GLuint bufNormals2; //Uchwyt na bufor VBO przechowujący tablicę wektorów normalnych
+GLuint bufTexCoords2;
 
 GLuint tex0;
 GLuint tex1;
 
-//Kostka
-/*float* vertices=Models::CubeInternal::vertices;
-float* colors=Models::CubeInternal::colors;
-float* normals=Models::CubeInternal::normals;
-float* texCoords=Models::CubeInternal::texCoords;
-int vertexCount=Models::CubeInternal::vertexCount;*/
-
+/*//Kostka
+float* vertices2=Models::CubeInternal::vertices;
+//float* colors=Models::CubeInternal::colors;
+float* normals2=Models::CubeInternal::normals;
+float* texCoords2=Models::CubeInternal::texCoords;
+int vertexCount2=Models::CubeInternal::vertexCount;
+*/
 //Czajnik
-/*float* vertices=Models::TeapotInternal::vertices;
-float* colors=Models::TeapotInternal::colors;
-float* normals=Models::TeapotInternal::vertexNormals;
-float* texCoords=Models::TeapotInternal::texCoords;
-int vertexCount=Models::TeapotInternal::vertexCount;*/
+float* vertices2=Models::TeapotInternal::vertices;
+float* colors2=Models::TeapotInternal::colors;
+float* normals2=Models::TeapotInternal::vertexNormals;
+float* texCoords2=Models::TeapotInternal::texCoords;
+int vertexCount2=Models::TeapotInternal::vertexCount;
 
-std::vector<glm::vec4> verticesV;
-std::vector<glm::vec2> texCoordsV;
-std::vector<glm::vec4> normalsV;
 int vertexCount;
 
 
@@ -89,7 +90,73 @@ float* vertices;
 float* normals;
 float* texCoords;
 
+void loadStuff(const char* path, float* v, float* n, float* t, int c)
+{
+    std::vector<glm::vec4> verticesV;
+    std::vector<glm::vec2> texCoordsV;
+    std::vector<glm::vec4> normalsV;
+    ObjectLoader objL;
+    bool check = objL.loadObj(path, verticesV, texCoordsV, normalsV);
+    vertexCount = verticesV.size();
+    vertices = new float[verticesV.size()*4];
+    normals = new float[normalsV.size()*4];
+    texCoords = new float[texCoordsV.size()*2];
+    //std::cout<<verticesV[0][0];
+    int a =0;
+    for(int i=0;i<verticesV.size();i++)
+    {
+        for(int j=0;j<4;j++)
+        {
+            vertices[a]=verticesV[i][j];
+            a++;
+        }
+    }
+    //std::cout<<vertices[0];
+    a = 0;
+    for(int i=0;i<normalsV.size();i++)
+    {
+        for(int j=0;j<4;j++)
+        {
+            normals[a]=normalsV[i][j];
+            a++;
+        }
+    }
 
+    for(int i=0;i<texCoordsV.size();i++)
+    {
+        texCoords[i]=texCoordsV[i][0];
+        texCoords[i+1]=texCoordsV[i][1];
+    }
+    std::cout<<path<<" file loaded...\n";
+
+}
+
+float findCell(float* v, glm::vec3 pos)
+{
+    int mini=1;
+    float miniVal;
+    for(int i=1;i<sizeof(v)/sizeof(float)-1;i=i+3)
+    {
+        float xDif = v[i-1] - pos[0];
+        float zDif = v[i+1] - pos[2];
+        float cmb = sqrt(xDif*xDif + zDif*zDif);
+
+        if(i=1)
+        {
+            miniVal = cmb;
+            mini=i;
+        }
+        else
+        {
+            if(cmb<miniVal)
+            {
+                miniVal = cmb;
+                mini=i;
+            }
+        }
+    }
+    return abs(v[mini]);
+}
 
 //Procedura obsługi błędów
 void error_callback(int error, const char* description) {
@@ -146,9 +213,12 @@ void assignVBOtoAttribute(ShaderProgram *shaderProgram,const char* attributeName
 void prepareObject(ShaderProgram *shaderProgram) {
 	//Zbuduj VBO z danymi obiektu do narysowania
 	bufVertices=makeBuffer(vertices, vertexCount, sizeof(float)*4); //VBO ze współrzędnymi wierzchołków
-	//bufColors=makeBuffer(colors, vertexCount, sizeof(float)*4);//VBO z kolorami wierzchołków
 	bufNormals=makeBuffer(normals, vertexCount, sizeof(float)*4);//VBO z wektorami normalnymi wierzchołków
 	bufTexCoords=makeBuffer(texCoords, vertexCount, sizeof(float)*2);//VBO ze współrzędnymi teksturowania
+
+	bufVertices2=makeBuffer(vertices2, vertexCount2, sizeof(float)*4); //VBO ze współrzędnymi wierzchołków
+	bufNormals2=makeBuffer(normals2, vertexCount2, sizeof(float)*4);//VBO z wektorami normalnymi wierzchołków
+	bufTexCoords2=makeBuffer(texCoords2, vertexCount2, sizeof(float)*2);//VBO ze współrzędnymi teksturowani
 
 	//Zbuduj VAO wiążący atrybuty z konkretnymi VBO
 	glGenVertexArrays(1,&vao); //Wygeneruj uchwyt na VAO i zapisz go do zmiennej globalnej
@@ -159,6 +229,16 @@ void prepareObject(ShaderProgram *shaderProgram) {
 	//assignVBOtoAttribute(shaderProgram,"color",bufColors,4); //"color" odnosi się do deklaracji "in vec4 color;" w vertex shaderze
 	assignVBOtoAttribute(shaderProgram,"normal",bufNormals,4); //"normal" odnosi się do deklaracji "in vec4 normal;" w vertex shaderze
 	assignVBOtoAttribute(shaderProgram,"texCoord0",bufTexCoords,2); //"texCoord0" odnosi się do deklaracji "in vec2 texCoord0;" w vertex shaderze
+
+	//Zbuduj VAO wiążący atrybuty z konkretnymi VBO
+	glGenVertexArrays(2,&vao2); //Wygeneruj uchwyt na VAO i zapisz go do zmiennej globalnej
+
+	glBindVertexArray(vao2); //Uaktywnij nowo utworzony VAO
+
+	assignVBOtoAttribute(shaderProgram,"vertex",bufVertices2,4); //"vertex" odnosi się do deklaracji "in vec4 vertex;" w vertex shaderze
+	//assignVBOtoAttribute(shaderProgram,"color",bufColors,4); //"color" odnosi się do deklaracji "in vec4 color;" w vertex shaderze
+	assignVBOtoAttribute(shaderProgram,"normal",bufNormals2,4); //"normal" odnosi się do deklaracji "in vec4 normal;" w vertex shaderze
+	assignVBOtoAttribute(shaderProgram,"texCoord0",bufTexCoords2,2); //"texCoord0" odnosi się do deklaracji "in vec2 texCoord0;" w vertex shaderze
 
 	glBindVertexArray(0); //Dezaktywuj VAO
 }
@@ -189,42 +269,8 @@ GLuint readTexture(char* filename) {
 
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
-    ObjectLoader objL;
-    bool check = objL.loadObj("objects/base.obj", verticesV, texCoordsV, normalsV);
-    vertexCount = verticesV.size();
-    vertices = new float[verticesV.size()*4];
-    normals = new float[normalsV.size()*4];
-    texCoords = new float[texCoordsV.size()*2];
-    //std::cout<<verticesV[0][0];
-    int a =0;
-    for(int i=0;i<verticesV.size();i++)
-    {
-        for(int j=0;j<4;j++)
-        {
-            vertices[a]=verticesV[i][j];
-            a++;
-        }
-    }
-    //std::cout<<vertices[0];
-    a = 0;
-    for(int i=0;i<normalsV.size();i++)
-    {
-        for(int j=0;j<4;j++)
-        {
-            normals[a]=normalsV[i][j];
-            a++;
-        }
-    }
 
-    for(int i=0;i<texCoordsV.size();i=i+2)
-    {
-        texCoords[i]=texCoordsV[i][0];
-        texCoords[i+1]=texCoordsV[i][1];
-    }
-    std::cout<<"Location loaded.";
-
-
-
+    loadStuff("objects/base.obj", vertices, normals, texCoords, vertexCount);
 	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
 	glClearColor(0, 0, 0, 1); //Czyść ekran na czarno
 	glEnable(GL_DEPTH_TEST); //Włącz używanie Z-Bufora
@@ -290,27 +336,33 @@ void drawObject(GLuint vao, ShaderProgram *shaderProgram, mat4 mP, mat4 mV, mat4
 	//Narysowanie obiektu
 	glDrawArrays(GL_TRIANGLES,0,vertexCount);
 
+	glBindVertexArray(vao2);
+
+	//Narysowanie obiektu
+	glDrawArrays(GL_TRIANGLES,0,vertexCount2);
+
 	//Posprzątanie po sobie (niekonieczne w sumie jeżeli korzystamy z VAO dla każdego rysowanego obiektu)
 	glBindVertexArray(0);
 }
 
 //Procedura rysująca zawartość sceny
 void drawScene(GLFWwindow* window) {
-    cam.move(1.0f/60.0f);
+    glm::vec3 p = cam.getPosition();
+
+    float up = findCell(vertices, p);
+    std::cout<<up;
+    cam.move(1.0f/60.0f, up);
 	//************Tutaj umieszczaj kod rysujący obraz******************l
-
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); //Wykonaj czyszczenie bufora kolorów
-
 	//glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f); //Wylicz macierz rzutowania
-
     glm::mat4 P = glm::perspective(vertFieldOfViewDegs, aspect, nearClipDistance, farClipDistance); //Wylicz macierz rzutowania
 
     /*glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
 		cam.getPosition(),
 		cam.getRotation(),
 		glm::vec3(0.0f, 1.0f, 0.0f));*/
-		float yaw=cam.getYRotRad();
-		float pitch=cam.getXRotRad();
+    float yaw=cam.getYRotRad();
+    float pitch=cam.getXRotRad();
     /*float cosYaw=cos(cam.getYRotRad());
     float sinYaw=sin(cam.getYRotRad());
     float cosPitch=cos(cam.getXRotRad());
@@ -324,31 +376,24 @@ void drawScene(GLFWwindow* window) {
 		glm::vec3(0.0f, 1.0f, 0.0f));*/
     //glm::mat4 V = glm::mat4(1.0f);
      //roll can be removed from here. because is not actually used in FPS camera
- glm::mat4 matPitch = glm::mat4(1.0f);//identity matrix
- glm::mat4 matYaw   = glm::mat4(1.0f);//identity matrix
+    glm::mat4 matPitch = glm::mat4(1.0f);//identity matrix
+    glm::mat4 matYaw   = glm::mat4(1.0f);//identity matrix
 
- //roll, pitch and yaw are used to store our angles in our class
- matPitch = glm::rotate(matPitch, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
- matYaw   = glm::rotate(matYaw,  yaw,    glm::vec3(0.0f, 1.0f, 0.0f));
+    //roll, pitch and yaw are used to store our angles in our class
+    matPitch = glm::rotate(matPitch, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    matYaw   = glm::rotate(matYaw,  yaw,    glm::vec3(0.0f, 1.0f, 0.0f));
 
- //order matters
- glm::mat4 rotate = matPitch * matYaw;
+    //order matters
+    glm::mat4 rotate = matPitch * matYaw;
 
- glm::mat4 translate = glm::mat4(1.0f);
- translate = glm::translate(translate, -eye);
+    glm::mat4 translate = glm::mat4(1.0f);
+    translate = glm::translate(translate, -eye);
 
-glm::mat4 V = rotate * translate;
-    /*std::cout<<V[1][0]<<std::endl;
-    std::cout<<V[1][1]<<std::endl;
-    std::cout<<V[1][2]<<std::endl;*/
+    glm::mat4 V = rotate * translate;
     /*V = glm::rotate(V, cam.getXRotRad(), glm::vec3(1.0f, 0.0f, 0.0f));
     V = glm::rotate(V, cam.getYRotRad(), glm::vec3(0.0f, 1.0f, 0.0f));*/
 
     V = glm::translate(V, cam.getPosition());
-    /*std::cout<<V[0][0]<<std::endl;
-    std::cout<<V[1][0]<<std::endl;
-    std::cout<<V[2][0]<<std::endl;*/
-
 
 	//Wylicz macierz modelu rysowanego obiektu
 	glm::mat4 M = glm::mat4(1.0f);

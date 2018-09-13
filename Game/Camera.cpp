@@ -5,13 +5,12 @@ const float Camera::TO_DEGS = 180.0f/3.1415926f;
 
 Camera::Camera(glm::vec3 initPos, glm::vec3 initRot, GLint theWindowWidth, GLint theWindowHeight)
 {
-    //initCamera();
     position = initPos;
     rotation = initRot;
     speed = glm::vec3(0.0f);
     rotation2 = glm::vec3(0.0f);
 
-    movementSpeedFactor = 100.0f;
+    movementSpeedFactor = 200.0f;
 
     pitchSensitivity = 0.05f;
     yawSensitivity = 0.05f;
@@ -102,7 +101,7 @@ void Camera::handleMouseMove(GLFWwindow* window, GLint mouseX, GLint mouseY)
     glfwSetCursorPos(window, windowMidX, windowMidY);
 }
 
-void Camera::move(double deltaTime)
+void Camera::move(double deltaTime, float up)
 {
     glm::vec3 movement(0.0f, 0.0f, 0.0f);
 
@@ -114,13 +113,21 @@ void Camera::move(double deltaTime)
     float pitchLimitFactor = cosX;
 
     if(holdForward)
-        movement = movement + glm::vec3(-sinY*pitchLimitFactor, 0, cosY*pitchLimitFactor);
+    {
+        movement = movement + glm::vec3(-sinY*pitchLimitFactor, 0.0f, cosY*pitchLimitFactor);
+    }
     if(holdBackward)
-        movement = movement + glm::vec3(sinY*pitchLimitFactor, 0, -cosY*pitchLimitFactor);
+    {
+        movement = movement + glm::vec3(sinY*pitchLimitFactor, 0.0f, -cosY*pitchLimitFactor);
+    }
     if(holdLeft)
+    {
         movement = movement + glm::vec3(cosY, 0.0f, sinY);
+    }
     if(holdRight)
+    {
         movement = movement - glm::vec3(cosY, 0.0f, sinY);
+    }
 
     glm::vec3 movNorm(0.0f, 0.0f, 0.0f);
     if(glm::length(movement)!= 0.0f)

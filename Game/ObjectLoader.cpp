@@ -95,3 +95,15 @@ bool ObjectLoader::loadObj(const char* path,
 	return true;
 
 }
+
+void ObjectLoader::convert(std::vector<glm::vec4> & verticesV,
+                     std::vector<glm::vec2> & texCoordsV,
+                     std::vector<glm::vec4> & normalsV,
+                     float* vertices,
+                     float* texCoords,
+                     float* normals)
+{
+
+
+
+}
